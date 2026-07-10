@@ -1,0 +1,659 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Dashboard - LaundryforU</title>
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        html { scroll-behavior: smooth; }
+        
+        body {
+            font-family: 'Poppins', sans-serif;
+            background: linear-gradient(135deg, #f0f7ff 0%, #f9fafb 100%);
+            color: #1f2937;
+            min-height: 100vh;
+        }
+        
+        /* NAVBAR */
+        .navbar {
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            background: rgba(255, 255, 255, 0.95);
+            backdrop-filter: blur(10px);
+            border-bottom: 1px solid rgba(229, 231, 235, 0.5);
+            z-index: 1000;
+            padding: 16px 24px;
+        }
+        
+        .navbar-container {
+            max-width: 1280px;
+            margin: 0 auto;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            gap: 24px;
+        }
+        
+        .navbar-logo {
+            font-size: 24px;
+            font-weight: 800;
+            background: linear-gradient(135deg, #2563eb 0%, #3b82f6 100%);
+            background-clip: text;
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            text-decoration: none;
+            letter-spacing: -0.5px;
+            flex-shrink: 0;
+        }
+        
+        .navbar-actions {
+            display: flex;
+            align-items: center;
+            gap: 16px;
+            margin-left: auto;
+        }
+        
+        .nav-user {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            padding: 8px 16px;
+            border-radius: 12px;
+            background: rgba(37, 99, 235, 0.08);
+            cursor: pointer;
+            transition: all 0.25s ease;
+        }
+        
+        .nav-user:hover {
+            background: rgba(37, 99, 235, 0.15);
+        }
+        
+        .nav-user-icon {
+            width: 36px;
+            height: 36px;
+            border-radius: 50%;
+            background: linear-gradient(135deg, #2563eb 0%, #3b82f6 100%);
+            color: white;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 18px;
+            font-weight: 700;
+        }
+        
+        .nav-logout {
+            padding: 8px 16px;
+            border-radius: 8px;
+            background: none;
+            border: 1px solid #e5e7eb;
+            color: #64748b;
+            font-size: 13px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.25s ease;
+        }
+        
+        .nav-logout:hover {
+            border-color: #dc2626;
+            color: #dc2626;
+            background: rgba(220, 38, 38, 0.05);
+        }
+        
+        /* MAIN */
+        main {
+            padding: 100px 24px 50px;
+            max-width: 1280px;
+            margin: 0 auto;
+        }
+        
+        /* WELCOME SECTION */
+        .welcome-section {
+            display: grid;
+            grid-template-columns: 1fr auto;
+            align-items: center;
+            gap: 32px;
+            margin-bottom: 40px;
+            padding: 40px;
+            background: linear-gradient(135deg, rgba(37, 99, 235, 0.08) 0%, rgba(59, 130, 246, 0.04) 100%);
+            border-radius: 24px;
+            border: 1px solid rgba(37, 99, 235, 0.12);
+        }
+        
+        .welcome-content h1 {
+            font-size: 32px;
+            font-weight: 800;
+            color: #111827;
+            margin-bottom: 12px;
+            line-height: 1.2;
+        }
+        
+        .welcome-content p {
+            font-size: 15px;
+            color: #64748b;
+            line-height: 1.6;
+            margin-bottom: 24px;
+            max-width: 400px;
+        }
+        
+        .welcome-cta {
+            display: flex;
+            gap: 12px;
+            flex-wrap: wrap;
+        }
+        
+        .btn {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            padding: 12px 24px;
+            border-radius: 12px;
+            font-size: 14px;
+            font-weight: 600;
+            text-decoration: none;
+            border: none;
+            cursor: pointer;
+            transition: all 0.25s ease;
+            gap: 8px;
+        }
+        
+        .btn-primary {
+            background: linear-gradient(135deg, #2563eb 0%, #3b82f6 100%);
+            color: white;
+            box-shadow: 0 10px 25px rgba(37, 99, 235, 0.2);
+        }
+        
+        .btn-primary:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 15px 35px rgba(37, 99, 235, 0.3);
+        }
+        
+        .btn-secondary {
+            background: white;
+            color: #2563eb;
+            border: 2px solid #e5e7eb;
+        }
+        
+        .btn-secondary:hover {
+            border-color: #2563eb;
+            background: rgba(37, 99, 235, 0.04);
+        }
+        
+        .welcome-icon {
+            font-size: 120px;
+            opacity: 0.15;
+            line-height: 1;
+        }
+        
+        /* STATS GRID */
+        .stats-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+            gap: 20px;
+            margin-bottom: 40px;
+        }
+        
+        .stat-card {
+            background: white;
+            border-radius: 16px;
+            padding: 28px;
+            border: 1px solid #e5e7eb;
+            transition: all 0.3s ease;
+            position: relative;
+            overflow: hidden;
+        }
+        
+        .stat-card::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            height: 4px;
+            background: linear-gradient(90deg, #2563eb 0%, #3b82f6 100%);
+            transform: scaleX(0);
+            transform-origin: left;
+            transition: transform 0.3s ease;
+        }
+        
+        .stat-card:hover {
+            transform: translateY(-4px);
+            border-color: #c7d2fe;
+            box-shadow: 0 12px 24px rgba(37, 99, 235, 0.08);
+        }
+        
+        .stat-card:hover::before {
+            transform: scaleX(1);
+        }
+        
+        .stat-header {
+            display: flex;
+            align-items: flex-start;
+            justify-content: space-between;
+            margin-bottom: 16px;
+        }
+        
+        .stat-label {
+            font-size: 12px;
+            font-weight: 700;
+            color: #64748b;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+        
+        .stat-icon {
+            font-size: 28px;
+        }
+        
+        .stat-value {
+            font-size: 36px;
+            font-weight: 800;
+            color: #0f172a;
+            margin-bottom: 8px;
+            line-height: 1;
+        }
+        
+        .stat-description {
+            font-size: 13px;
+            color: #94a3b8;
+            line-height: 1.5;
+        }
+        
+        /* ORDERS SECTION */
+        .orders-section-header {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            gap: 16px;
+            margin-bottom: 24px;
+            flex-wrap: wrap;
+        }
+        
+        .orders-section-header h2 {
+            font-size: 24px;
+            font-weight: 700;
+            color: #111827;
+            margin: 0;
+        }
+        
+        .orders-section-header-right {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+        
+        /* ORDERS TABLE */
+        .orders-container {
+            background: white;
+            border-radius: 16px;
+            border: 1px solid #e5e7eb;
+            overflow: auto;
+            box-shadow: 0 4px 12px rgba(15, 23, 42, 0.04);
+        }
+        
+        .orders-table {
+            width: 100%;
+            min-width: 1100px;
+            border-collapse: collapse;
+            table-layout: auto;
+        }
+        
+        .orders-table thead {
+            background: linear-gradient(90deg, #f8fafc 0%, #eff6ff 100%);
+            border-bottom: 2px solid #e5e7eb;
+        }
+        
+        .orders-table th {
+            padding: 20px;
+            text-align: left;
+            font-size: 12px;
+            font-weight: 700;
+            color: #475569;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+        
+        .orders-table tbody tr {
+            border-bottom: 1px solid #f1f5f9;
+            transition: all 0.2s ease;
+        }
+        
+        .orders-table tbody tr:hover {
+            background: rgba(37, 99, 235, 0.02);
+        }
+        
+        .orders-table tbody tr:last-child {
+            border-bottom: none;
+        }
+        
+        .orders-table td {
+            padding: 18px 20px;
+            font-size: 14px;
+            color: #334155;
+        }
+        
+        .order-id {
+            font-weight: 700;
+            color: #0f172a;
+        }
+        
+        .order-service {
+            font-weight: 600;
+            color: #1f2937;
+        }
+        
+        .order-price {
+            font-weight: 700;
+            color: #2563eb;
+        }
+        
+        .status-badge {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            padding: 6px 12px;
+            border-radius: 8px;
+            font-size: 12px;
+            font-weight: 700;
+            text-transform: uppercase;
+            letter-spacing: 0.3px;
+            gap: 4px;
+        }
+        
+        .status-badge.pending {
+            background: #fef3c7;
+            color: #92400e;
+        }
+        
+        .status-badge.proses {
+            background: #dbeafe;
+            color: #0c4a6e;
+        }
+        
+        .status-badge.dikemas {
+            background: #dcfce7;
+            color: #15803d;
+        }
+        
+        .status-badge.dikirim {
+            background: #e0f2fe;
+            color: #0369a1;
+        }
+        
+        .order-actions {
+            display: flex;
+            gap: 8px;
+        }
+        
+        .action-btn {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            width: 32px;
+            height: 32px;
+            border-radius: 8px;
+            border: 1px solid #e5e7eb;
+            background: white;
+            color: #64748b;
+            font-size: 14px;
+            cursor: pointer;
+            transition: all 0.2s ease;
+        }
+        
+        .action-btn:hover {
+            border-color: #2563eb;
+            color: #2563eb;
+            background: rgba(37, 99, 235, 0.04);
+        }
+        
+        /* EMPTY STATE */
+        .empty-state {
+            padding: 60px 40px;
+            text-align: center;
+            color: #64748b;
+        }
+        
+        .empty-state-icon {
+            font-size: 64px;
+            margin-bottom: 20px;
+            opacity: 0.5;
+        }
+        
+        .empty-state h3 {
+            font-size: 20px;
+            font-weight: 700;
+            color: #1f2937;
+            margin-bottom: 10px;
+        }
+        
+        .empty-state p {
+            font-size: 14px;
+            margin-bottom: 24px;
+            max-width: 400px;
+            margin-left: auto;
+            margin-right: auto;
+            line-height: 1.6;
+        }
+        
+        /* RESPONSIVE */
+        @media (max-width: 768px) {
+            .welcome-section {
+                grid-template-columns: 1fr;
+                gap: 24px;
+                padding: 32px 24px;
+            }
+            
+            .welcome-icon {
+                display: none;
+            }
+            
+            .welcome-content h1 {
+                font-size: 26px;
+            }
+            
+            .stats-grid {
+                grid-template-columns: repeat(2, 1fr);
+                gap: 16px;
+            }
+            
+            .orders-section-header {
+                flex-direction: column;
+                align-items: flex-start;
+            }
+            
+            .orders-section-header-right {
+                width: 100%;
+                flex-wrap: wrap;
+            }
+            
+            .navbar-container {
+                flex-direction: column;
+                align-items: flex-start;
+            }
+            
+            .navbar-actions {
+                width: 100%;
+            }
+            
+            .orders-table {
+                font-size: 12px;
+            }
+            
+            .orders-table th,
+            .orders-table td {
+                padding: 12px;
+            }
+        }
+        
+        @media (max-width: 480px) {
+            main {
+                padding: 90px 16px 40px;
+            }
+            
+            .stats-grid {
+                grid-template-columns: 1fr;
+            }
+            
+            .welcome-content h1 {
+                font-size: 22px;
+            }
+            
+            .navbar {
+                padding: 12px 16px;
+            }
+            
+            .navbar-container {
+                gap: 12px;
+            }
+            
+            .navbar-logo {
+                font-size: 20px;
+            }
+        }
+    </style>
+</head>
+<body>
+
+    <!-- NAVBAR -->
+    <nav class="navbar">
+        <div class="navbar-container">
+            <a href="/home" class="navbar-logo">LaundryforU</a>
+            <div class="navbar-actions">
+                <a href="/logout" class="nav-logout">Logout</a>
+            </div>
+        </div>
+    </nav>
+
+    <!-- MAIN CONTENT -->
+    <main>
+        
+        <!-- WELCOME SECTION -->
+        <section class="welcome-section">
+            <div class="welcome-content">
+                <h1>Kelola Pesanan Anda</h1>
+                <p>Pantau status pesanan laundry secara real-time, buat order baru, dan kelola akun Anda dengan mudah.</p>
+                <div class="welcome-cta">
+                    <a href="/buat-pesanan" class="btn btn-primary">
+                        ➕ Buat Pesanan Baru
+                    </a>
+                    <a href="/profile" class="btn btn-secondary">
+                        Lihat Profil
+                    </a>
+                </div>
+            </div>
+            <div class="welcome-icon">📦</div>
+        </section>
+
+        <!-- STATS GRID -->
+        <section class="stats-grid">
+            <div class="stat-card">
+                <div class="stat-header">
+                    <span class="stat-label">Total Pesanan</span>
+                    <span class="stat-icon">📊</span>
+                </div>
+                <div class="stat-value" th:text="${orders.size()}">0</div>
+                <p class="stat-description">Semua pesanan yang Anda buat</p>
+            </div>
+
+            <div class="stat-card">
+                <div class="stat-header">
+                    <span class="stat-label">Belum Bayar</span>
+                    <span class="stat-icon">⏳</span>
+                </div>
+                <div class="stat-value" th:text="${#lists.size(orders.?[status == 'Belum Diterima' or status == 'PENDING' or status == 'Ditolak'])}">0</div>
+                <p class="stat-description">Menunggu konfirmasi pembayaran</p>
+            </div>
+
+            <div class="stat-card">
+                <div class="stat-header">
+                    <span class="stat-label">Sedang Diproses</span>
+                    <span class="stat-icon">🧺</span>
+                </div>
+                <div class="stat-value" th:text="${#lists.size(orders.?[status == 'Sudah Diterima' or status == 'Kurir Menjemput Pakaian Anda' or status == 'Sedang Dicuci' or status == 'Sedang Disetrika' or status == 'Sedang Dikemas'])}">0</div>
+                <p class="stat-description">Sedang dicuci dan dirapikan</p>
+            </div>
+
+            <div class="stat-card">
+                <div class="stat-header">
+                    <span class="stat-label">Selesai</span>
+                    <span class="stat-icon">✅</span>
+                </div>
+                <div class="stat-value" th:text="${#lists.size(orders.?[status == 'Selesai' or status == 'Laundry Mu Siap Diantar'])}">0</div>
+                <p class="stat-description">Siap diambil atau dikirim</p>
+            </div>
+        </section>
+
+        <!-- ORDERS SECTION -->
+        <section>
+            <div class="orders-section-header">
+                <h2>Riwayat Pesanan</h2>
+            </div>
+
+            <!-- ORDERS TABLE -->
+            <div class="orders-container" th:if="${not #lists.isEmpty(orders)}">
+                <table class="orders-table">
+                    <thead>
+                        <tr>
+                            <th>#</th>
+                            <th>Layanan</th>
+                            <th>Antar</th>
+                            <th>Pembayaran</th>
+                            <th>Total</th>
+                            <th>Status</th>
+                            <th>Tanggal Jemput</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+    <tr th:each="o, iterStat : ${orders}">
+        
+        <td class="order-id" th:text="'#' + ${iterStat.count}">#1</td>
+        
+        <td class="order-service" th:text="${o.jenisLayanan != null ? o.jenisLayanan : '-'}">-</td>
+        <td th:text="${'Rp ' + (o.antarJemput != null and o.antarJemput > 0 ? #numbers.formatInteger(o.antarJemput, 1, 'COMMA') : '0')}">-</td>
+        <td th:text="${o.metodePembayaran != null ? o.metodePembayaran : 'Tidak tersedia'}">-</td>
+        <td th:text="${'Rp ' + (o.totalHarga != null ? #numbers.formatInteger(o.totalHarga, 1, 'COMMA') : '0')}">-</td>
+        
+        <td>
+            <span class="status-badge"
+                th:classappend="${(o.status == 'Belum Diterima' or o.status == 'PENDING') ? 'pending' :
+                                 (o.status == 'Sudah Diterima') ? 'proses' :
+                                 (o.status == 'Kurir Menjemput Pakaian Anda') ? 'proses' :
+                                 (o.status == 'Sedang Dicuci') ? 'proses' :
+                                 (o.status == 'Sedang Disetrika') ? 'proses' :
+                                 (o.status == 'Sedang Dikemas') ? 'dikemas' :
+                                 (o.status == 'Selesai') ? 'dikemas' :
+                                 (o.status == 'Laundry Mu Siap Diantar') ? 'dikirim' :
+                                 (o.status == 'Ditolak') ? 'pending' :
+                                 'pending'}"
+                th:text="${o.status != null ? o.status : 'Belum Diterima'}">
+                Status
+            </span>
+        </td>
+        <td th:text="${o.tanggalJemput != null ? o.tanggalJemput : '-'}">-</td>
+    </tr>
+</tbody>
+                </table>
+            </div>
+
+            <!-- EMPTY STATE -->
+            <div class="orders-container" th:if="${#lists.isEmpty(orders)}">
+                <div class="empty-state">
+                    <div class="empty-state-icon">📭</div>
+                    <h3>Belum Ada Pesanan</h3>
+                    <p>Anda belum membuat pesanan apapun. Mulai sekarang dan rasakan kemudahan layanan laundry kami!</p>
+                    <a href="/buat-pesanan" class="btn btn-primary">
+                        ➕ Buat Pesanan Pertama Anda
+                    </a>
+                </div>
+            </div>
+        </section>
+
+    </main>
+
+</body>
+</html>
+
+

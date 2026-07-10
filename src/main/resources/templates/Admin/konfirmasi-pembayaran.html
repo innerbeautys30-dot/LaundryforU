@@ -1,0 +1,66 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.w3.org/1999/xhtml">
+<head>
+  <meta charset="UTF-8" />
+  <title>Konfirmasi Pembayaran - Admin</title>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+  <style>
+    body { font-family: 'Inter', sans-serif; background: #f9fafb; color: #0f172a; padding: 24px; }
+    .container { max-width: 1100px; margin: 0 auto; }
+    .topbar { display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px; }
+    .topbar a { padding: 10px 14px; border-radius: 12px; background: white; border: 1px solid #e5e7eb; color: #334155; text-decoration: none; font-weight: 600; }
+    .topbar a:hover { border-color: #2563eb; color: #2563eb; }
+    .card { background: white; border: 1px solid #e5e7eb; border-radius: 16px; padding: 18px; box-shadow: 0 10px 30px rgba(15,23,42,.06); margin-bottom: 12px; }
+    table { width: 100%; border-collapse: collapse; }
+    th, td { padding: 12px; text-align: left; font-size: 14px; }
+    th { color: #64748b; font-weight: 700; font-size: 12px; text-transform: uppercase; }
+    .badge { display: inline-block; padding: 6px 10px; border-radius: 999px; font-size: 12px; font-weight: 700; background: #dbeafe; color: #0c4a6e; }
+    .badge-paid { background: #d1fae5; color: #065f46; }
+    .btn { padding: 10px 14px; border-radius: 12px; font-weight: 700; border: none; cursor: pointer; }
+    .btn-paid { background: #2563eb; color: white; }
+    .btn-paid:hover { background: #1d4ed8; }
+    .empty { text-align: center; color: #64748b; padding: 30px; }
+    .history-label { display: inline-block; padding: 4px 10px; border-radius: 999px; font-size: 11px; font-weight: 700; background: #f1f5f9; color: #64748b; margin-left: 8px; }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <div class="topbar">
+      <div>
+        <h1 style="font-size:22px; font-weight:800;">Konfirmasi Pembayaran</h1>
+        <p style="color:#64748b; margin-top:6px;">Konfirmasi pesanan yang telah dibayar oleh pelanggan.</p>
+      </div>
+      <a href="/admin">← Dashboard</a>
+    </div>
+
+    <div th:if="${#lists.isEmpty(orders)}" class="empty">Tidak ada pembayaran yang perlu dikonfirmasi.</div>
+    <div th:each="o : ${orders}" class="card">
+      <table>
+        <tr>
+          <th>Pelanggan</th>
+          <td th:text="${o.namaLengkap}">-</td>
+          <th>Metode</th>
+          <td th:text="${o.metodePembayaran}">-</td>
+        </tr>
+        <tr>
+          <th>Total</th>
+          <td th:text="${'Rp ' + #numbers.formatInteger(o.totalHarga, 1, 'COMMA')}">-</td>
+          <th>Status</th>
+          <td>
+            <span th:class="${o.metodePembayaran == 'Lunas'} ? 'badge badge-paid' : 'badge'" th:text="${o.status}">Pending</span>
+            <span th:if="${o.metodePembayaran == 'Lunas'}" class="history-label">✓ Sudah Dikonfirmasi</span>
+          </td>
+        </tr>
+      </table>
+      <div th:if="${o.metodePembayaran == 'Transfer Bank'}" style="display:flex; gap:12px; margin-top:14px; justify-content: flex-end;">
+        <form th:action="@{'/admin/konfirmasi-pembayaran/' + ${o.id} + '/lunas'}" method="post" style="display:inline;">
+          <button type="submit" class="btn btn-paid">Konfirmasi Pembayaran</button>
+        </form>
+      </div>
+      <div th:if="${o.metodePembayaran != 'Transfer Bank'}" style="display:flex; gap:12px; margin-top:14px; justify-content: flex-end;">
+        <span style="font-size:12px; color:#64748b; font-weight:600;">Pembayaran sudah dikonfirmasi</span>
+      </div>
+    </div>
+  </div>
+</body>
+</html>

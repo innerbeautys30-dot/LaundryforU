@@ -1,0 +1,97 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Kelola Pesanan - LaundryforU</title>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+        body { font-family: 'Inter', sans-serif; background-color: #f9fafb; }
+        .sidebar { background: white; border-right: 1px solid #e5e7eb; }
+    </style>
+</head>
+<body class="flex">
+
+    <aside class="sidebar w-64 h-screen fixed p-6 hidden md:block">
+        <a href="/admin/dashboard" class="text-2xl font-bold text-blue-600 mb-10 block">LaundryforU</a>
+        <nav class="space-y-2">
+            <a href="/admin/dashboard" class="flex items-center p-3 bg-blue-50 text-blue-700 rounded-xl font-medium">🧺 Dashboard</a>
+            <a href="/admin/pesanan" class="flex items-center p-3 text-gray-600 hover:bg-gray-50 rounded-xl transition">📦 Kelola Pesanan</a>
+            <a href="/admin/konfirmasi-pesanan" class="flex items-center p-3 text-gray-600 hover:bg-gray-50 rounded-xl transition relative">
+                <span>📋 Konfirmasi Pesanan</span>
+                <span class="ml-auto bg-red-500 text-white text-xs font-bold px-2 py-0.5 rounded-full" th:text="${pendingKonfirmasi}">0</span>
+            </a>
+            <a href="/admin/konfirmasi-pembayaran" class="flex items-center p-3 text-gray-600 hover:bg-gray-50 rounded-xl transition relative">
+                <span>💳 Konfirmasi Pembayaran</span>
+                <span class="ml-auto bg-red-500 text-white text-xs font-bold px-2 py-0.5 rounded-full" th:text="${pendingPembayaran}">0</span>
+            </a>
+            <a href="/logout" class="flex items-center p-3 text-red-500 hover:bg-red-50 rounded-xl transition mt-10">🚪 LogOut</a>
+        </nav>
+    </aside>
+
+    <main class="ml-0 md:ml-64 p-8 w-full">
+        <header class="mb-8 flex justify-between items-center">
+            <div>
+                <h1 class="text-2xl font-bold text-gray-800">Kelola Pesanan</h1>
+                <p class="text-gray-500">Daftar semua pesanan pelanggan.</p>
+            </div>
+            <a href="/admin/tambah-pesanan" class="bg-blue-600 text-white px-5 py-2.5 rounded-xl font-medium hover:bg-blue-700 shadow-lg shadow-blue-200 transition">+ Tambah Pesanan</a>
+        </header>
+
+        <div class="bg-white rounded-2xl shadow-sm border border-gray-100 overflow-hidden">
+            <div class="p-6 border-b border-gray-50">
+                <input type="text" placeholder="Cari pesanan..." class="px-4 py-2 border border-gray-200 rounded-lg text-sm w-64">
+            </div>
+
+            <div class="overflow-x-auto">
+                <table class="w-full text-left">
+                    <thead class="bg-gray-50">
+                        <tr>
+                            <th class="p-4 text-sm text-gray-600">ID</th>
+                            <th class="p-4 text-sm text-gray-600">Pelanggan</th>
+                            <th class="p-4 text-sm text-gray-600">Layanan</th>
+                            <th class="p-4 text-sm text-gray-600">Berat</th>
+                            <th class="p-4 text-sm text-gray-600">Item</th>
+                            <th class="p-4 text-sm text-gray-600">Total</th>
+                            <th class="p-4 text-sm text-gray-600">Status</th>
+                            <th class="p-4 text-sm text-gray-600">Aksi</th>
+                        </tr>
+                    </thead>
+                    <tbody class="divide-y divide-gray-50">
+                        <tr th:each="o : ${orders}" class="hover:bg-gray-50 transition">
+                            <td class="p-4 text-sm text-gray-500" th:text="${o.id}">#</td>
+                            <td class="p-4 font-medium text-gray-800" th:text="${o.namaLengkap}">-</td>
+                            <td class="p-4 text-gray-600" th:text="${o.jenisLayanan}">-</td>
+                            <td class="p-4 text-gray-600" th:text="${o.berat != null ? o.berat + ' kg' : '-'}">-</td>
+                            <td class="p-4 text-gray-600" th:text="${o.jumlahItem}">-</td>
+                            <td class="p-4 text-gray-800 font-semibold" th:text="${'Rp ' + (o.totalHarga != null ? #numbers.formatInteger(o.totalHarga, 1, 'COMMA') : '0')}">-</td>
+                            <td class="p-4">
+                                <form th:action="@{'/admin/update-status/' + ${o.id}}" method="post" style="display:inline;">
+                                    <select name="status" class="text-xs border border-gray-200 rounded-lg px-2 py-1" onchange="this.form.submit()">
+                                        <option value="" disabled selected th:unless="${o.status == 'Sedang Dicuci' || o.status == 'Sedang Disetrika' || o.status == 'Sedang Dikemas' || o.status == 'Selesai' || o.status == 'Laundry Mu Siap Diantar'}">-- Pilih Progres --</option>
+                                        <option value="Sedang Dicuci" th:selected="${o.status == 'Sedang Dicuci'}">Sedang Dicuci</option>
+                                        <option value="Sedang Disetrika" th:selected="${o.status == 'Sedang Disetrika'}">Sedang Disetrika</option>
+                                        <option value="Sedang Dikemas" th:selected="${o.status == 'Sedang Dikemas'}">Sedang Dikemas</option>
+                                        <option value="Selesai" th:selected="${o.status == 'Selesai'}">Selesai</option>
+                                        <option value="Laundry Mu Siap Diantar" th:selected="${o.status == 'Laundry Mu Siap Diantar'}">Laundry Mu Siap Diantar</option>
+                                    </select>
+                                </form>
+                            </td>
+                            <td class="p-4 flex gap-3">
+                                <a th:href="@{'/admin/edit/' + ${o.id}}" class="text-blue-600 font-medium text-sm">Edit</a>
+                                <a th:href="@{'/admin/hapus/' + ${o.id}}" class="text-red-500 font-medium text-sm" onclick="return confirm('Yakin hapus pesanan?')">Hapus</a>
+                            </td>
+                        </tr>
+                        <tr th:if="${#lists.isEmpty(orders)}">
+                            <td colspan="8" class="p-8 text-center text-gray-500">Belum ada pesanan.</td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </main>
+</body>
+</html>
+
+

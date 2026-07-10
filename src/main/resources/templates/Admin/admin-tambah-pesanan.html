@@ -1,0 +1,105 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <title>Tambah Pesanan - Admin</title>
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body { font-family: 'Poppins', sans-serif; background: #dbeafe; padding-top: 40px; }
+        .container-form { max-width: 700px; margin: 0 auto; padding: 20px; }
+        .form-card { background: white; border-radius: 16px; box-shadow: 0 10px 40px rgba(0,0,0,0.08); padding: 40px; }
+        .form-group { margin-bottom: 20px; }
+        .form-group label { display: block; font-size: 14px; font-weight: 600; margin-bottom: 8px; }
+        .form-group input, .form-group select, .form-group textarea { width: 100%; padding: 12px; border: 2px solid #e5e7eb; border-radius: 8px; background: #f9fafb; }
+        .btn { width: 100%; padding: 14px; border: none; border-radius: 8px; font-weight: 600; cursor: pointer; margin-top: 10px; text-align: center; display: block; text-decoration: none; }
+        .btn-submit { background: #2563eb; color: white; }
+        .btn-back { background: #f3f4f6; color: #4b5563; }
+        .radio-group { display: flex; gap: 20px; padding-top: 10px; }
+    </style>
+</head>
+<body> 
+<div class="container-form">
+    <div class="form-card">
+        <form th:action="@{/admin/simpan-pesanan}" th:object="${order}" method="post">
+        
+
+            <div class="form-group">
+                <label>Nama Lengkap</label>
+                <input type="text" th:field="*{namaLengkap}" required>
+            </div>
+            
+            <div class="form-group">
+                <label>No WhatsApp</label>
+                <input type="text" th:field="*{noWa}" required>
+            </div>
+            
+            <div class="form-group">
+                <label>Alamat Pengiriman</label>
+                <textarea th:field="*{alamat}" rows="2" required></textarea>
+            </div>
+            
+            <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 20px;">
+                <div class="form-group">
+                    <label>Jenis Layanan</label>
+                    <select id="jenisLayanan" name="hargaLayanan" required onchange="hitungHarga()">
+                        <option value="7000">Cuci Kiloan (Rp 7.000/kg)</option>
+                        <option value="20000">Cuci Satuan (Rp 20.000/Item)</option>
+                        <option value="12000">Express Clean (Rp 12.000/Kg)</option>
+                        <option value="25000">Cucian Besar (Rp 25.000/Item)</option>
+                    </select>
+                </div>
+                <div class="form-group">
+                    <label>Berat (kg)</label>
+                    <input type="number" id="berat" th:field="*{berat}" step="0.1" required oninput="hitungHarga()">
+                </div>
+            </div>
+
+                <div class="form-group">
+    <label>Jumlah Item</label>
+    <input type="number" id="jumlahItem" th:field="*{jumlahItem}" min="1" required oninput="hitungHarga()">
+</div>
+            
+            
+            <div class="form-group">
+                <label>Antar-Jemput (Biaya Rp 10.000)</label>
+                <div class="radio-group">
+                    <label><input type="radio" name="antarJemput" value="10000" onclick="hitungHarga()"> Ya</label>
+                    <label><input type="radio" name="antarJemput" value="0" checked onclick="hitungHarga()"> Tidak</label>
+                </div>
+            </div>
+            
+            <div class="form-group" style="background: #eff6ff; padding: 15px; border-radius: 8px; border: 1px dashed #2563eb;">
+                <label>Total Harga:</label>
+                <h3 id="totalHargaDisplay" style="color: #2563eb;">Rp 0</h3>
+                <input type="hidden" id="totalHargaInput" name="totalHarga" />
+            </div>
+            
+            <div class="form-group">
+                <label>Tanggal Jemput</label>
+                <input type="date" th:field="*{tanggalJemput}" required>
+            </div>
+            
+            <button type="submit" class="btn btn-submit">✓ Simpan Pesanan</button>
+            <a href="/admin" class="btn btn-back">← Batal</a>
+        </form>
+    </div>
+</div>
+
+<script>
+    function hitungHarga() {
+        const hargaLayanan = parseInt(document.getElementById('jenisLayanan').value) || 0;
+        const berat = parseFloat(document.getElementById('berat').value) || 0;
+        const radioAntarJemput = document.querySelector('input[name="antarJemput"]:checked');
+        const biayaAntarJemput = radioAntarJemput ? parseInt(radioAntarJemput.value) : 0;
+        
+        const total = (hargaLayanan * berat) + biayaAntarJemput;
+        
+        document.getElementById('totalHargaDisplay').innerText = "Rp " + total.toLocaleString('id-ID');
+        document.getElementById('totalHargaInput').value = total;
+    }
+    // Panggil sekali saat load untuk reset total
+    hitungHarga();
+</script>
+</body>
+</html>

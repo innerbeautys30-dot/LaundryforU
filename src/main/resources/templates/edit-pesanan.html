@@ -1,0 +1,177 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <title>Edit Pesanan - LaundryForU</title>
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body { font-family: 'Poppins', sans-serif; background: linear-gradient(135deg, #f0f7ff 0%, #f9fafb 100%); padding: 32px 20px 80px; }
+        .page { max-width: 920px; margin: 0 auto; }
+        .page-header { margin-bottom: 28px; }
+        .page-header h1 { font-size: 28px; font-weight: 800; color: #111827; }
+        .page-header p { color: #64748b; margin-top: 8px; }
+        .card { background: white; border-radius: 18px; border: 1px solid #e5e7eb; box-shadow: 0 10px 30px rgba(15,23,42,0.06); padding: 28px; }
+        .form-grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 18px; }
+        .field { display: flex; flex-direction: column; gap: 8px; }
+        .field.span-2 { grid-column: 1 / -1; }
+        label { font-size: 13px; font-weight: 700; color: #334155; }
+        input, select, textarea { width: 100%; padding: 12px 14px; border-radius: 12px; border: 1px solid #e5e7eb; background: #f9fafb; color: #0f172a; font-family: inherit; font-size: 14px; outline: none; }
+        input:focus, select:focus, textarea:focus { border-color: #2563eb; background: white; }
+        .radio { display: flex; gap: 14px; padding-top: 6px; }
+        .radio label { display: inline-flex; align-items: center; gap: 8px; font-weight: 600; color: #334155; cursor: pointer; }
+        .summary { margin-top: 14px; padding: 14px 16px; border-radius: 14px; background: #eff6ff; border: 1px dashed #2563eb; display: flex; align-items: center; justify-content: space-between; gap: 12px; }
+        .summary .label { color: #334155; font-size: 13px; font-weight: 700; }
+        .summary .value { color: #2563eb; font-size: 20px; font-weight: 800; }
+        .actions { display: flex; gap: 12px; margin-top: 22px; }
+        .btn { display: inline-flex; align-items: center; justify-content: center; padding: 12px 16px; border-radius: 12px; font-weight: 700; font-size: 14px; text-decoration: none; border: none; cursor: pointer; transition: transform .15s ease; }
+        .btn:hover { transform: translateY(-1px); }
+        .btn-primary { background: #2563eb; color: white; flex: 1; }
+        .btn-ghost { background: white; color: #334155; border: 1px solid #e5e7eb; }
+        .hint { font-size: 12px; color: #64748b; margin-top: 6px; }
+    </style>
+</head>
+<body>
+<div class="page">
+    <div class="page-header">
+        <h1>Edit Pesanan </h1>
+        <p>Ubah detail pesanan sesuai kebutuhan.</p>
+    </div>
+
+    <form class="card" th:action="@{/admin/update-order}" th:object="${order}" method="post">
+        <input type="hidden" th:field="*{id}" />
+
+        <div class="form-grid">
+            <div class="field">
+                <label>Nama Lengkap</label>
+                <input type="text" th:field="*{namaLengkap}" required>
+            </div>
+            <div class="field">
+                <label>No. WhatsApp</label>
+                <input type="text" th:field="*{noWa}" required>
+            </div>
+            <div class="field span-2">
+                <label>Alamat Pengiriman</label>
+                <textarea th:field="*{alamat}" rows="2" required></textarea>
+            </div>
+            <div class="field">
+                <label>Jenis Layanan</label>
+                <select id="jenisLayanan" name="jenisLayanan" required onchange="switchInputMode()">
+                    <option value="Cuci Kiloan" data-price="7000" th:selected="${order.jenisLayanan == 'Cuci Kiloan'}">Cuci Kiloan (Rp 7.000/kg)</option>
+                    <option value="Cuci Satuan" data-price="20000" th:selected="${order.jenisLayanan == 'Cuci Satuan'}">Cuci Satuan (Rp 20.000/item)</option>
+                    <option value="Express Clean" data-price="12000" th:selected="${order.jenisLayanan == 'Express Clean'}">Express Clean (Rp 12.000/kg)</option>
+                    <option value="Cucian Besar" data-price="25000" th:selected="${order.jenisLayanan == 'Cucian Besar'}">Cucian Besar (Rp 25.000/item)</option>
+                </select>
+                <input type="hidden" id="hargaSatuanInput" name="hargaSatuan" value="0" />
+            </div>
+            <div class="field" id="beratGroup">
+                <label>Berat (kg)</label>
+                <input type="number" id="berat" th:field="*{berat}" step="0.1" oninput="hitungHarga()">
+                <div class="hint">Contoh: 2,5</div>
+            </div>
+            <div class="field" id="qtyGroup" style="display: none;">
+    <label>Jumlah Item</label>
+    <input type="number" 
+           id="qty" 
+           th:field="*{jumlahItem}" 
+           min="1" 
+           value="1" 
+           oninput="hitungHarga()"
+           disabled> 
+    <div class="hint">Contoh: 3 baju</div>
+</div>
+            <div class="field span-2">
+                <label>Layanan Antar-Jemput (Rp 10.000)</label>
+                <div class="radio">
+                    <label><input type="radio" name="antarJemput" value="10000" onclick="hitungHarga()" th:checked="${order.antarJemput != null and order.antarJemput > 0}"> Ya</label>
+                    <label><input type="radio" name="antarJemput" value="0" onclick="hitungHarga()" th:checked="${order.antarJemput == null or order.antarJemput == 0}"> Tidak</label>
+                </div>
+            </div>
+        </div>
+
+        <div class="summary">
+            <div class="label">Total Harga Terdaftar:</div>
+            <div class="value" id="totalDisplay">Rp 0</div>
+            <input type="hidden" id="totalHargaInput" name="totalHarga" th:value="${order.totalHarga != null ? order.totalHarga : 0}" />
+        </div>
+
+        <div class="field">
+    <label>Tanggal Jemput</label>
+    <input type="date" 
+           th:field="*{tanggalJemput}" 
+           placeholder="yyyy-mm-dd" 
+           required>
+</div>
+            <div class="field">
+                <label>Metode Pembayaran</label>
+                <select th:field="*{metodePembayaran}">
+                    <option value="Bayar di Tempat">Bayar di Tempat</option>
+                    <option value="Transfer Bank">Transfer Bank</option>
+                </select>
+            </div>
+            <div class="field span-2">
+                <label>Status Pesanan</label>
+                <select th:field="*{status}">
+                    <option value="Belum Diterima">Belum Diterima</option>
+                    <option value="Sudah Diterima">Sudah Diterima</option>
+                    <option value="Kurir Menjemput Pakaian Anda">Kurir Menjemput Pakaian Anda</option>
+                    <option value="Sedang Dicuci">Sedang Dicuci</option>
+                    <option value="Sedang Disetrika">Sedang Disetrika</option>
+                    <option value="Sedang Dikemas">Sedang Dikemas</option>
+                    <option value="Selesai">Selesai</option>
+                    <option value="Laundry Mu Siap Diantar">Laundry Mu Siap Diantar</option>
+                    <option value="Ditolak">Ditolak</option>
+                </select>
+            </div>
+            <div class="field span-2">
+                <label>Catatan Tambahan</label>
+                <textarea th:field="*{catatan}" rows="2"></textarea>
+            </div>
+        </div>
+
+        <div class="actions">
+            <button type="submit" class="btn btn-primary">✓ Simpan Perubahan</button>
+            <a href="/admin" class="btn btn-ghost">← Batal</a>
+        </div>
+    </form>
+</div>
+
+<script>
+    function switchInputMode() {
+        const svc = document.getElementById('jenisLayanan').value || '';
+        const perItem = svc.includes('Cuci Satuan') || svc.includes('Cucian Besar');
+        document.getElementById('beratGroup').style.display = perItem ? 'none' : 'flex';
+        document.getElementById('qtyGroup').style.display = perItem ? 'flex' : 'none';
+        hitungHarga();
+    }
+
+    function tampilkanQty() {
+    var group = document.getElementById('qtyGroup');
+    var inputQty = document.getElementById('qty');
+    
+    group.style.display = 'block';
+    inputQty.disabled = false; // Aktifkan kembali saat ditampilkan
+}
+
+    function hitungHarga() {
+        const selectedOption = document.querySelector('#jenisLayanan option:checked') || {};
+        const hargaPerSatuan = parseInt(selectedOption.getAttribute('data-price') || '0', 10) || 0;
+        const berat = parseFloat(document.getElementById('berat').value || '0');
+        const qty = parseInt(document.getElementById('qty').value || '0', 10);
+        const biayaAntarJemput = parseInt((document.querySelector('input[name="antarJemput"]:checked') || {}).value || '0', 10) || 0;
+        const perItem = document.getElementById('qtyGroup').style.display !== 'none';
+        const subtotal = perItem ? (hargaPerSatuan * qty) : (hargaPerSatuan * berat);
+        const total = subtotal + biayaAntarJemput;
+        document.getElementById('totalDisplay').innerText = 'Rp ' + total.toLocaleString('id-ID');
+        document.getElementById('totalHargaInput').value = total;
+        const hargaSatuanInput = document.getElementById('hargaSatuanInput');
+        if (hargaSatuanInput) hargaSatuanInput.value = hargaPerSatuan;
+    }
+
+    window.addEventListener('DOMContentLoaded', function() {
+        switchInputMode();
+        hitungHarga();
+    });
+</script>
+</body>
+</html>

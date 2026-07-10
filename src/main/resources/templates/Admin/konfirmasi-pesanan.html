@@ -1,0 +1,97 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+  <meta charset="UTF-8" />
+  <title>Konfirmasi Pesanan - Admin</title>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+  <style>
+    body { font-family: 'Inter', sans-serif; background: #f9fafb; color: #0f172a; padding: 24px; }
+    .container { max-width: 1100px; margin: 0 auto; }
+    .topbar { display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px; }
+    .topbar a { padding: 10px 14px; border-radius: 12px; background: white; border: 1px solid #e5e7eb; color: #334155; text-decoration: none; font-weight: 600; }
+    .topbar a:hover { border-color: #2563eb; color: #2563eb; }
+    .card { background: white; border: 1px solid #e5e7eb; border-radius: 16px; padding: 18px; box-shadow: 0 10px 30px rgba(15,23,42,.06); margin-bottom: 12px; }
+    table { width: 100%; border-collapse: collapse; }
+    th, td { padding: 12px; text-align: left; font-size: 14px; }
+    th { color: #64748b; font-weight: 700; font-size: 12px; text-transform: uppercase; }
+    .badge { display: inline-block; padding: 6px 10px; border-radius: 999px; font-size: 12px; font-weight: 700; }
+    .badge-pending { background: #fef3c7; color: #92400e; }
+    .badge-approved { background: #dbeafe; color: #1e40af; }
+    .badge-pickup { background: #ede9fe; color: #5b21b6; }
+    .badge-process { background: #fce7f3; color: #9d174d; }
+    .badge-done { background: #d1fae5; color: #065f46; }
+    .btn { padding: 10px 14px; border-radius: 12px; font-weight: 700; border: none; cursor: pointer; }
+    .btn-proses { background: #2563eb; color: white; }
+    .btn-proses:hover { background: #1d4ed8; }
+    .btn-pickup { background: #7c3aed; color: white; }
+    .btn-pickup:hover { background: #6d28d9; }
+    .empty { text-align: center; color: #64748b; padding: 30px; }
+    .info-row { background: #f8fafc; border-radius: 10px; padding: 10px 14px; margin-top: 8px; font-size: 13px; color: #334155; }
+    .info-row span { font-weight: 600; }
+    select.status-select { padding: 8px 12px; border-radius: 10px; border: 1px solid #e5e7eb; font-size: 13px; font-weight: 600; background: white; cursor: pointer; }
+    .action-row { display: flex; gap: 10px; margin-top: 14px; justify-content: flex-end; align-items: center; flex-wrap: wrap; }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <div class="topbar">
+      <div>
+        <h1 style="font-size:22px; font-weight:800;">Konfirmasi Pesanan</h1>
+        <p style="color:#64748b; margin-top:6px;">Terima pesanan masuk dan update progres pengerjaan.</p>
+      </div>
+      <a href="/admin">← Dashboard</a>
+    </div>
+
+    <div th:if="${#lists.isEmpty(orders)}" class="empty">Tidak ada pesanan.</div>
+    <div th:each="o : ${orders}" class="card">
+      <table>
+        <tr>
+          <th>Pelanggan</th>
+          <td th:text="${o.namaLengkap}">-</td>
+          <th>Layanan</th>
+          <td th:text="${o.jenisLayanan}">-</td>
+        </tr>
+        <tr>
+          <th>Total</th>
+          <td th:text="${'Rp ' + #numbers.formatInteger(o.totalHarga, 1, 'COMMA')}">-</td>
+          <th>Status</th>
+          <td>
+            <span th:class="${o.status == 'Belum Diterima'} ? 'badge badge-pending' : (${o.status == 'Sudah Diterima'} ? 'badge badge-approved' : (${o.status == 'Kurir Menjemput Pakaian Anda'} ? 'badge badge-pickup' : (${o.status == 'Selesai' || o.status == 'Laundry Mu Siap Diantar'} ? 'badge badge-done' : 'badge badge-process')))" th:text="${o.status}">Pending</span>
+          </td>
+        </tr>
+      </table>
+
+      <div class="info-row">
+        <div>👤 <span>No. WA:</span> <span th:text="${o.noWa}">-</span></div>
+        <div style="margin-top:4px;">📍 <span>Alamat:</span> <span th:text="${o.alamat}">-</span></div>
+        <div th:if="${o.tanggalJemput != null}" style="margin-top:4px;">📅 <span>Tanggal Jemput:</span> <span th:text="${o.tanggalJemput}">-</span></div>
+        <div th:if="${o.antarJemput != null && o.antarJemput > 0}" style="margin-top:4px;">🚚 <span>Layanan Jemput-Antar:</span> <span>Ya (Rp '</span><span th:text="${#numbers.formatInteger(o.antarJemput, 1, 'COMMA')}">0</span><span>')</span></div>
+        <div th:if="${o.antarJemput == null || o.antarJemput == 0}" style="margin-top:4px;">🚚 <span>Layanan Jemput-Antar:</span> <span>Tidak</span></div>
+      </div>
+
+      <div class="action-row">
+        <form th:if="${o.status == 'Belum Diterima'}" th:action="@{'/admin/update-status/' + ${o.id}}" method="post" style="display:inline;">
+          <input type="hidden" name="status" value="Sudah Diterima" />
+          <button type="submit" class="btn btn-proses">✓ Terima Pesanan</button>
+        </form>
+        <form th:if="${o.status == 'Belum Diterima' || o.status == 'Sudah Diterima'}" th:action="@{'/admin/update-status/' + ${o.id}}" method="post" style="display:inline;">
+          <input type="hidden" name="status" value="Kurir Menjemput Pakaian Anda" />
+          <button type="submit" class="btn btn-pickup">🛵 Kurir Menjemput Pakaian Anda</button>
+        </form>
+        <form th:action="@{'/admin/update-status/' + ${o.id}}" method="post" style="display:inline;">
+          <select name="status" class="status-select" onchange="this.form.submit()">
+            <option value="" disabled selected th:unless="${o.status == 'Sedang Dicuci' || o.status == 'Sedang Disetrika' || o.status == 'Sedang Dikemas' || o.status == 'Selesai' || o.status == 'Laundry Mu Siap Diantar'}">-- Update Progres --</option>
+            <option value="Sedang Dicuci" th:selected="${o.status == 'Sedang Dicuci'}">Sedang Dicuci</option>
+            <option value="Sedang Disetrika" th:selected="${o.status == 'Sedang Disetrika'}">Sedang Disetrika</option>
+            <option value="Sedang Dikemas" th:selected="${o.status == 'Sedang Dikemas'}">Sedang Dikemas</option>
+            <option value="Selesai" th:selected="${o.status == 'Selesai'}">Selesai</option>
+            <option value="Laundry Mu Siap Diantar" th:selected="${o.status == 'Laundry Mu Siap Diantar'}">Laundry Mu Siap Diantar</option>
+          </select>
+        </form>
+      </div>
+    </div>
+  </div>
+</body>
+</html>
+
+
